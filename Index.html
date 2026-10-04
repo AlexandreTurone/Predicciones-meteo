@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predicción meteorológica personalizada para tu evento</title>
+<meta name="description" content="Predicción del tiempo a medida para tu evento: tendencia a 2 semanas, mapas a 1 semana y detalle a 72 h y 24 h.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛅</text></svg>">
+<style>
+:root{
+  --sky:#EAF5FD; --sky2:#CFE8F8; --blue:#4BA8E8; --deep:#1B5E9B; --ink:#0F3558; --muted:#4F6D88; --white:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--white);line-height:1.6}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.wrap{max-width:960px;margin:0 auto;padding:0 22px}
+
+/* Hero */
+header{background:linear-gradient(180deg,var(--sky2) 0%,var(--sky) 70%,var(--white) 100%);padding:28px 0 72px;position:relative;overflow:hidden}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;color:var(--deep)}
+.brand svg{width:44px;height:30px}
+.hero{padding-top:56px;max-width:640px}
+h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.12;letter-spacing:-.02em;color:var(--ink)}
+.lead{margin-top:18px;font-size:1.12rem;color:var(--muted);max-width:52ch}
+.btn{display:inline-block;margin-top:28px;background:var(--deep);color:var(--white);text-decoration:none;font-weight:600;padding:14px 26px;border-radius:999px;transition:background .2s}
+.btn:hover{background:var(--ink)}
+.btn.alt{background:var(--white);color:var(--deep);border:2px solid var(--deep);margin-top:0;width:100%;text-align:center}
+.btn.alt:hover{background:var(--sky)}
+.cloud{position:absolute;fill:var(--white);opacity:.8}
+.c1{width:220px;right:-30px;top:60px}
+.c2{width:140px;right:200px;top:150px;opacity:.55}
+@media (prefers-reduced-motion:no-preference){.c1{animation:drift 18s ease-in-out infinite alternate}.c2{animation:drift 24s ease-in-out infinite alternate-reverse}}
+@keyframes drift{to{transform:translateX(-40px)}}
+
+section{padding:56px 0}
+h2{font-size:clamp(1.5rem,4vw,2rem);letter-spacing:-.01em;margin-bottom:12px}
+.sub{color:var(--muted);max-width:60ch}
+
+/* Intro */
+.intro{background:var(--sky);border-radius:20px;padding:30px;margin-top:-28px;position:relative}
+.intro p+p{margin-top:12px}
+.intro strong{color:var(--deep)}
+
+/* Timeline: from fuzzy to sharp */
+.timeline{margin-top:34px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;position:relative}
+.timeline:before{content:"";position:absolute;left:0;right:0;top:11px;height:0;border-top:3px dashed var(--sky2);z-index:0;background:none}
+.step{position:relative;z-index:1}
+.dot{width:24px;height:24px;border-radius:50%;background:var(--white);border:4px solid var(--blue);margin-bottom:14px}
+.step:nth-child(1) .dot{border-color:var(--sky2)}
+.step:nth-child(2) .dot{border-color:#8FCBF1}
+.step:nth-child(3) .dot{border-color:var(--blue)}
+.step:nth-child(4) .dot{border-color:var(--deep);background:var(--deep)}
+.step h3{font-size:1.05rem}
+.step .when{font-size:.88rem;color:var(--deep);font-weight:600}
+.step p{font-size:.93rem;color:var(--muted);margin-top:6px}
+@media(max-width:720px){
+  .timeline{grid-template-columns:1fr;gap:26px;padding-left:34px}
+  .timeline:before{left:11px;right:auto;top:0;bottom:0;border-top:0;border-left:3px dashed var(--sky2)}
+  .dot{position:absolute;left:-34px;top:2px;margin:0}
+}
+
+/* Pricing */
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:22px;margin-top:30px}
+.plan{border:2px solid var(--sky2);border-radius:22px;padding:30px 26px;display:flex;flex-direction:column;background:var(--white)}
+.plan.full{border-color:var(--deep);box-shadow:0 12px 34px rgba(27,94,155,.14);position:relative}
+.tag{position:absolute;top:-14px;left:26px;background:var(--deep);color:var(--white);font-size:.8rem;font-weight:600;padding:3px 14px;border-radius:999px}
+.plan h3{font-size:1.25rem}
+.price{font-size:2.8rem;font-weight:800;color:var(--deep);line-height:1.1;margin:8px 0 4px}
+.price small{font-size:1rem;font-weight:600}
+.plan .for{color:var(--muted);font-size:.93rem;margin-bottom:18px}
+.plan ul{list-style:none;margin-bottom:26px;flex:1}
+.plan li{padding:9px 0 9px 28px;border-top:1px solid var(--sky);position:relative;font-size:.95rem}
+.plan li:before{content:"";position:absolute;left:2px;top:15px;width:12px;height:7px;border-left:3px solid var(--blue);border-bottom:3px solid var(--blue);transform:rotate(-45deg)}
+.plan li b{display:block}
+.plan li span{color:var(--muted);font-size:.9rem}
+.plan .btn{margin-top:0;text-align:center}
+
+/* How */
+.how{background:var(--sky);border-radius:22px;padding:34px}
+.how ol{margin:14px 0 0 20px}
+.how li{margin-top:8px}
+.how li::marker{color:var(--deep);font-weight:700}
+
+footer{padding:34px 0 44px;text-align:center}
+.legal{font-size:.74rem;color:#7C93A8;max-width:62ch;margin:0 auto;line-height:1.5}
+.legal+.legal{margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="cloud c1" viewBox="0 0 220 120" aria-hidden="true"><path d="M50 110a40 40 0 0 1-6-79 55 55 0 0 1 104-10 45 45 0 0 1 28 89z"/></svg>
+  <svg class="cloud c2" viewBox="0 0 220 120" aria-hidden="true"><path d="M50 110a40 40 0 0 1-6-79 55 55 0 0 1 104-10 45 45 0 0 1 28 89z"/></svg>
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 64 44" aria-hidden="true"><circle cx="46" cy="14" r="10" fill="#FFC857"/><path d="M16 42a13 13 0 0 1-2-26 18 18 0 0 1 34 4 12 12 0 0 1-2 22z" fill="#4BA8E8"/></svg>
+      <span>@alexenlasnubes</span>
+    </div>
+    <div class="hero">
+      <h1>¿Lloverá en tu evento?</h1>
+      <p class="lead">Recibe un pronóstico personalizado para tu boda, ruta, viaje o torneo directamente en tu móvil, con seguimiento continuo a medida que se acerca la fecha.</p>
+      <a class="btn" href="#tarifas">Ver tarifas y opciones</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="intro">
+    <h2>Por qué es más precisa que la app del móvil</h2>
+    <p>Las aplicaciones te enseñan la salida automática de un solo modelo. Yo <strong>comparo e interpreto varios modelos estadísticos y meteorológicos</strong> y aplico mi conocimiento para decidir qué escenario es más probable en tu lugar y tu fecha.</p>
+    <p>Eso sí: la atmósfera es un sistema caótico y <strong>ninguna predicción puede garantizar un 100 %</strong>. Lo que sí te doy es la mejor lectura posible, explicadas con claridad.</p>
+  </div>
+
+  <section>
+    <h2>Cómo se va afinando tu predicción</h2>
+    <p class="sub">Cuanto más cerca está el evento, más fina es la información.</p>
+    <div class="timeline">
+      <div class="step"><div class="dot"></div><div class="when">2 semanas antes</div><h3>Tendencia</h3><p>Hacia dónde parece que va el tiempo: si se asoma un patrón estable, inestable o cambiante.</p></div>
+      <div class="step"><div class="dot"></div><div class="when">1 semana antes</div><h3>Tendencia + lluvia</h3><p>Actualizo la tendencia y añado mapas de precipitación junto con su probabilidad</p></div>
+      <div class="step"><div class="dot"></div><div class="when">72 horas antes</div><h3>Detalle completo</h3><p>Temperatura, precipitación, nubosidad y viento.</p></div>
+      <div class="step"><div class="dot"></div><div class="when">24 horas antes</div><h3>Última actualización</h3><p>Mismo detalle completo, con el ajuste final de las últimas 24H.</p></div>
+    </div>
+  </section>
+
+  <section id="tarifas">
+    <h2>Elige tu tarifa</h2>
+    <p class="sub">Pago único por evento. Sin suscripciones.</p>
+    <div class="plans">
+
+      <article class="plan">
+        <h3>Esencial</h3>
+        <div class="price">10 €<small> / evento</small></div>
+        <p class="for">Para quien solo necesita saber cómo queda el día.</p>
+        <ul>
+          <li><b>Predicción a 72 horas</b><span>Temperatura, precipitación, nubosidad y viento</span></li>
+          <li><b>Predicción a 24 horas</b><span>Temperatura, precipitación, nubosidad y viento</span></li>
+        </ul>
+        <a class="btn alt" href="https://instagram.com/alexenlasnubes">Pedir Esencial</a>
+      </article>
+
+      <article class="plan full">
+        <span class="tag">Más completa</span>
+        <h3>Completa</h3>
+        <div class="price">20 €<small> / evento</small></div>
+        <p class="for">Para planificar con margen y decidir con tiempo.</p>
+        <ul>
+          <li><b>2 semanas antes</b><span>Tendencia general</span></li>
+          <li><b>1 semana antes</b><span>Tendencia y mapas de precipitación</span></li>
+          <li><b>72 horas antes</b><span>Temperatura, precipitación, nubosidad y viento</span></li>
+          <li><b>24 horas antes</b><span>Temperatura, precipitación, nubosidad y viento</span></li>
+        </ul>
+        <a class="btn" href="https://instagram.com/alexenlasnubes">Pedir Completa</a>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="how">
+      <h2>Cómo pedirla</h2>
+      <ol>
+        <li>Escríbeme por mensaje directo en Instagram.</li>
+        <li>Dime la fecha, la hora y el lugar exacto del evento, y la tarifa que eliges.</li>
+        <li>Confirmamos el pago y te envío cada predicción en su momento.</li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="legal">Las predicciones son una estimación y no garantizan el resultado real. La atmósfera es un sistema caótico y siempre queda incertidumbre.</p>
+    <p class="legal">Aclaro que este servicio utiliza únicamente modelos y datos de acceso libre y público. No empleo información, mapas ni sistemas internos o de acceso restringido, ni obtengo beneficio de ellos.</p>
+  </div>
+</footer>
+
+</body>
+</html>
